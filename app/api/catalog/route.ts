@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Catalog = { type: string; id: string; name?: string };
+type Catalog = { type: string; id: string; name?: string; extra?: string[] };
 
 function isPublicAddress(address: string) {
   if (isIP(address) === 4) {
@@ -123,6 +123,7 @@ export async function GET(request: NextRequest) {
         id: (item.id as string).slice(0, 160),
         type: (item.type as string).slice(0, 40),
         name: textField(item.name, 100),
+        extra: Array.isArray(item.extra) ? item.extra.filter((entry): entry is Record<string, unknown> => Boolean(entry && typeof entry === "object")).map((entry) => textField(entry.name, 60)).filter((name): name is string => Boolean(name)) : [],
       }));
 
     const catalogId = request.nextUrl.searchParams.get("catalogId");
@@ -149,8 +150,11 @@ export async function GET(request: NextRequest) {
     const skipRaw = Number(request.nextUrl.searchParams.get("skip") || "0");
     const skip = Number.isInteger(skipRaw) ? Math.max(0, Math.min(skipRaw, 500)) : 0;
     const base = new URL("./", manifestUrl);
+    const search = (request.nextUrl.searchParams.get("search") || "").trim().slice(0, 120);
+    const supportsSearch = Boolean(search && selected.extra?.includes("search"));
+    const searchPath = supportsSearch ? "/search=" + encodeURIComponent(search) : "";
     const catalogUrl = new URL(
-      "catalog/" + encodeURIComponent(type) + "/" + encodeURIComponent(catalogId) + ".json",
+      "catalog/" + encodeURIComponent(type) + "/" + encodeURIComponent(catalogId) + searchPath + ".json",
       base,
     );
     catalogUrl.searchParams.set("skip", String(skip));
