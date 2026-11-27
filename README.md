@@ -8,9 +8,9 @@ The responsive AFTERFRAME discovery experience now loads real metadata from comp
 
 **Catalogue discovery phase:** the server reads add-on manifests, discovers declared catalogues, retrieves title metadata, and supports remote search when a catalogue declares the `search` extra. Results are normalized into the existing cinematic shelves and Discover grid. Search is also applied locally to the titles already loaded.
 
-**Add-on phase:** the app includes a Stremio-compatible manifest URL installer and add-on manager. The server validates HTTPS URLs, blocks local/private destinations, re-checks redirects, applies request timeouts, limits response sizes, and verifies required manifest fields. The three sources supplied for AFTERFRAME are seeded into the browser's add-on list on first launch. Custom add-on installation and removal remain administrator-only.
+**Add-on phase:** the app includes a Stremio-compatible manifest URL installer and add-on manager. The server validates HTTPS URLs, blocks local/private destinations, re-checks redirects, applies request timeouts, limits response sizes, and verifies required manifest fields. No third-party playback or stream providers are bundled. Custom catalogue-only add-on installation and removal remain administrator-only.
 
-The add-on list and saved titles are currently browser-local; they are not synced between devices. Add-ons that declare only non-catalogue resources do not populate the discovery shelves. This phase handles catalogue metadata only; it does not resolve streams or play video. Selecting a title opens a detailed dossier with source attribution and an explicit playback-availability state. No verified official playback provider is currently connected.
+The add-on list and saved titles are currently browser-local; they persist across refreshes on the same browser but are not synced between devices. Add-ons that declare only non-catalogue resources do not populate the discovery shelves. This phase handles catalogue metadata only; it does not resolve streams or play video. Selecting a title opens a detailed dossier with source attribution and an explicit playback-availability state. No verified official playback provider is currently connected.
 
 ## Product roadmap
 
@@ -44,7 +44,7 @@ Both variables must be present for administrator sign-in. The admin session is c
 - Caps response sizes and item counts, uses request timeouts, and re-validates HTTPS destinations and redirects.
 - Rejects local/private network destinations, credentials in URLs, and non-standard HTTPS ports.
 
-Manifest validation checks expected structure and network boundaries; it does not certify an add-on's safety, accuracy, or content rights. Only use sources you trust and content you are authorized to access.
+Manifest validation checks expected structure and network boundaries; it accepts catalogue metadata resources only and strips all other capabilities. It does not certify a source's accuracy or content rights. Only use sources you trust and metadata you are authorized to access.
 
 ## Architecture notes
 
