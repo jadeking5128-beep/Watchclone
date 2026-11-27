@@ -17,6 +17,11 @@ const films = [
 ];
 const categories = ["For you", "Movies", "Series", "Documentaries", "Animation"];
 const STORAGE_KEY = "afterframe.addons.v1";
+const suggestedAddons = [
+  { name: "BTTTR catalogue", url: "https://btttr.cc/TYxBDoMwDAT_4nP6gXyg96q3qgcLrBQpxNR2VCHE36sEAtzGs-tdoEPDyEHBvyCikdptBNdQwYFxj3OVG50OwUHH45BCjXfUE0vBhFLfKsdRShNPOaLUoPE2PsHbwUiG4Je1hGok4JcaecBsXH6Eg5AqeJNM-_gTwyG-GeNg81Xph393SkJX8UAbUmgGA13Fuv4B/manifest.json" },
+  { name: "RFNX catalogue", url: "https://fun.rfnx.workers.dev/manifest.json" },
+  { name: "Netflix catalogue", url: "https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json" },
+];
 
 export default function Home() {
   const [active, setActive] = useState("For you");
@@ -28,6 +33,11 @@ export default function Home() {
   const [addons, setAddons] = useState<InstalledAddon[]>([]);
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState("");
+  const [adminConfigured, setAdminConfigured] = useState(false);
+  const [adminAuthenticated, setAdminAuthenticated] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminError, setAdminError] = useState("");
+  const [adminBusy, setAdminBusy] = useState(false);
 
   useEffect(() => {
     try {
@@ -53,6 +63,34 @@ export default function Home() {
     } catch {
       setInstallError("This browser could not save your add-on list.");
     }
+  }
+
+  async function loginAdmin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAdminBusy(true);
+    setAdminError("");
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Admin sign-in failed.");
+      setAdminAuthenticated(true);
+      setAdminPassword("");
+      setAdminError("");
+    } catch (error) {
+      setAdminError(error instanceof Error ? error.message : "Admin sign-in failed.");
+    } finally {
+      setAdminBusy(false);
+    }
+  }
+
+  async function logoutAdmin() {
+    await fetch("/api/admin/session", { method: "DELETE" });
+    setAdminAuthenticated(false);
+    setAdminPassword("");
   }
 
   async function installAddon(event: FormEvent<HTMLFormElement>) {
@@ -149,11 +187,31 @@ export default function Home() {
       {managerOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setManagerOpen(false); }}>
         <section className="addon-modal" role="dialog" aria-modal="true" aria-labelledby="addon-title">
           <div className="modal-head"><div><div className="eyebrow muted">AFTERFRAME / EXTENSIONS</div><h2 id="addon-title">Add-on <i>manager.</i></h2></div><button className="modal-close" onClick={() => setManagerOpen(false)} aria-label="Close add-on manager"><X size={19}/></button></div>
+          <div className="admin-access">
+            {adminAuthenticated ? (
+              <div className="admin-status"><span><ShieldCheck size={15}/> ADMIN ACCESS ACTIVE</span><button type="button" onClick={logoutAdmin}>Sign out</button></div>
+            ) : (
+              <>
+                <div className="admin-access-copy"><ShieldCheck size={17}/><div><strong>Administrator access</strong><p>{adminConfigured ? "Sign in to add or remove catalogue sources." : "Admin access is not configured yet. Add the two server environment variables in Vercel."}</p></div></div>
+                {adminConfigured && <form className="admin-login" onSubmit={loginAdmin}>
+                  <input type="password" autoComplete="current-password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} placeholder="Admin password" required />
+                  <button className="secondary-btn" disabled={adminBusy}>{adminBusy ? "Checking…" : "Sign in"}</button>
+                </form>}
+                {adminError && <p className="form-error" role="alert">{adminError}</p>}
+              </>
+            )}
+          </div>
           <div className="manifest-panel">
             <div className="manifest-icon"><Puzzle size={20}/></div>
             <div className="manifest-copy"><h3>Install from manifest URL</h3><p>Paste the HTTPS manifest URL supplied by a compatible Stremio add-on.</p></div>
           </div>
-          <form className="manifest-form" onSubmit={installAddon}>
+          {adminAuthenticated && <div className="suggested-sources">
+            <div className="suggested-head"><h3>Provided sources</h3><span>ADMIN ONLY · 3 URLS</span></div>
+            {suggestedAddons.map((source) => <div className="suggested-source" key={source.name}>
+              <span>{source.name}</span><button type="button" onClick={() => { setManifestUrl(source.url); setInstallError(""); }}>Use URL</button>
+            </div>)}
+          </div>}
+          {adminAuthenticated && <form className="manifest-form" onSubmit={installAddon}>
             <label htmlFor="manifest-url">MANIFEST URL</label>
             <div className="manifest-input-row"><input id="manifest-url" type="url" required value={manifestUrl} onChange={(event) => setManifestUrl(event.target.value)} placeholder="https://example.com/manifest.json"/><button className="primary-btn" disabled={installing}>{installing ? <><LoaderCircle size={15} className="spin"/> Checking</> : "Install add-on"}</button></div>
             {installError && <p className="form-error" role="alert">{installError}</p>}
@@ -164,9 +222,9 @@ export default function Home() {
             <div className="addon-list">{addons.map((addon) => <article className="addon-item" key={addon.manifest.id}>
               <div className="addon-avatar">{addon.manifest.logo ? <img src={addon.manifest.logo} alt="" /> : <Puzzle size={18}/>}</div>
               <div className="addon-details"><h4>{addon.manifest.name}</h4><p>{addon.manifest.description || addon.manifest.id}</p><span>v{addon.manifest.version} · {addon.manifest.types.join(", ")}</span><a href={addon.manifestUrl} target="_blank" rel="noreferrer">Manifest <ExternalLink size={11}/></a></div>
-              <button className="remove-addon" onClick={() => removeAddon(addon.manifest.id)} aria-label={"Remove " + addon.manifest.name}><Trash2 size={16}/></button>
+              {adminAuthenticated && <button className="remove-addon" onClick={() => removeAddon(addon.manifest.id)} aria-label={"Remove " + addon.manifest.name}><Trash2 size={16}/></button>}
             </article>)}</div>}
-          <p className="storage-note">Your installed list is currently saved in this browser only. Account sync is not connected yet.</p>
+          <p className="storage-note">Only authenticated administrators can add or remove sources. The installed list is currently saved in this browser only; account sync is not connected yet.</p>
         </section>
       </div>}
 
