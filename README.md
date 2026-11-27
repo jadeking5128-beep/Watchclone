@@ -19,7 +19,7 @@ The add-on list and saved titles persist locally and can sync across devices aft
 3. Title detail dossier and playback availability foundation — implemented. Actual provider handoff remains pending verified official-provider integration.
 4. HLS/DASH player, subtitles, audio tracks, resume and episode progression.
 5. IntroDB integration where supported by available metadata/API access.
-6. Cloud-synced user library, watch history, and optional Trakt/Simkl sync.
+6. Protected cloud sync for saved titles and catalogue add-ons — code and migration implemented; activation pending Supabase setup. Watch history and optional Trakt/Simkl sync remain future work.
 
 ## Administrator setup
 
@@ -30,7 +30,7 @@ The Vercel project uses these environment variables:
 - `SUPABASE_URL`: the HTTPS URL of the Supabase project.
 - `SUPABASE_SERVICE_ROLE_KEY`: the server-only service-role key; never expose it with a NEXT_PUBLIC_ prefix.
 
-Both variables must be present for administrator sign-in. The admin session is checked server-side for protected add-on installation requests. Do not commit secrets or paste them into source files.
+The two `AFTERFRAME_` variables must be present for administrator sign-in. Supabase variables are only required for cross-device library sync. The admin session is checked server-side for protected add-on installation and cloud-library requests. Do not commit secrets or paste them into source files.
 
 ## Cloud library setup
 
