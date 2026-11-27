@@ -4,29 +4,31 @@ A cinematic discovery platform with an extensible catalogue and add-on ecosystem
 
 ## Current status
 
-The responsive AFTERFRAME discovery experience is in place, including a curated demo collection, local title search, and saved-title interactions.
+The responsive AFTERFRAME discovery experience now loads real metadata from compatible Stremio catalogues instead of relying on a hardcoded demo-film list.
 
-**Add-on phase:** the app now includes a Stremio-compatible manifest URL installer and add-on manager. The server validates HTTPS URLs, blocks local/private destinations, checks redirects, applies a request timeout, limits manifest size, and verifies the required manifest fields before returning add-on metadata. Installed add-ons can be reviewed and removed from the manager.
+**Catalogue discovery phase:** the server reads add-on manifests, discovers declared catalogues, retrieves title metadata, and supports remote search when a catalogue declares the `search` extra. Results are normalized into the existing cinematic shelves and Discover grid. Search is also applied locally to the titles already loaded.
 
-The installed add-on list is currently stored in the browser's local storage. It is not synced between devices. Adding and removing add-ons is restricted by a signed, HTTP-only administrator session; the server independently checks this session on every install request. Add-on catalogue and stream resources are not yet wired into the discovery grid or player, and the film collection remains illustrative demo data.
+**Add-on phase:** the app includes a Stremio-compatible manifest URL installer and add-on manager. The server validates HTTPS URLs, blocks local/private destinations, re-checks redirects, applies request timeouts, limits response sizes, and verifies required manifest fields. The three sources supplied for AFTERFRAME are seeded into the browser's add-on list on first launch. Custom add-on installation and removal remain administrator-only.
+
+The add-on list and saved titles are currently browser-local; they are not synced between devices. Add-ons that declare only non-catalogue resources do not populate the discovery shelves. This phase handles catalogue metadata only; it does not resolve streams or play video.
 
 ## Product roadmap
 
-1. Metadata provider integration and real catalogue search.
-2. Stremio-compatible manifest URL importer and add-on management — initial implementation complete.
-3. Compatible catalogue and stream resource adapters, with source discovery for content the user is authorized to access.
+1. Metadata provider integration and real catalogue discovery — initial implementation complete.
+2. Stremio-compatible manifest importer and add-on management — initial implementation complete.
+3. Authorized playback-source integration and source selection.
 4. HLS/DASH player, subtitles, audio tracks, resume and episode progression.
 5. IntroDB integration where supported by available metadata/API access.
 6. Cloud-synced user library, watch history, and optional Trakt/Simkl sync.
 
 ## Administrator setup
 
-Set these environment variables in Vercel for the Production environment (and Preview if needed):
+The Vercel project uses these environment variables:
 
-- `AFTERFRAME_ADMIN_PASSWORD`: a unique, strong admin password. Do not commit it or send it in chat.
-- `AFTERFRAME_SESSION_SECRET`: a cryptographically random secret of at least 32 characters, used to sign seven-day HTTP-only admin sessions.
+- `AFTERFRAME_ADMIN_PASSWORD_HASH`: a salted scrypt password hash. The plaintext password is not stored in Vercel.
+- `AFTERFRAME_SESSION_SECRET`: a cryptographically random signing secret of at least 32 characters, used for seven-day HTTP-only admin sessions.
 
-After deployment, open Add-ons and sign in with the admin password. Without both variables, add/remove controls remain locked. The three source URLs supplied for AFTERFRAME are listed as admin-only presets; an administrator must choose and install each one. Manifest validation still applies.
+Both variables must be present for administrator sign-in. The admin session is checked server-side for protected add-on installation requests. Do not commit secrets or paste them into source files.
 
 ## Development
 
@@ -34,16 +36,16 @@ After deployment, open Add-ons and sign in with the admin password. Without both
 - `npm install`
 - `npm run dev`
 
-## Manifest installer notes
+## Catalogue API notes
 
-- Accepts HTTPS manifest URLs on the standard HTTPS port.
-- Rejects credentials in URLs, local hostnames, private/reserved IP destinations, and non-standard ports.
-- Re-validates each redirect destination and limits redirects to three.
-- Uses an eight-second timeout and a 1 MB manifest limit.
-- Requires the core Stremio manifest fields: `id`, `version`, `name`, `resources`, and `types`.
+- Reads the manifest's declared `catalogs` and `resources`.
+- Requests `/catalog/{type}/{id}.json` for supported catalogues.
+- Uses the `search` catalogue extra only when the add-on declares it.
+- Caps response sizes and item counts, uses request timeouts, and re-validates HTTPS destinations and redirects.
+- Rejects local/private network destinations, credentials in URLs, and non-standard HTTPS ports.
 
-Only install add-ons from sources you trust. Manifest validation confirms the expected shape; it does not certify an add-on's safety, accuracy, or content rights.
+Manifest validation checks expected structure and network boundaries; it does not certify an add-on's safety, accuracy, or content rights. Only use sources you trust and content you are authorized to access.
 
 ## Architecture notes
 
-A manifest URL describes an add-on interface; it is not itself a playable video URL. The next integration step is to request catalogues and streams through compatible adapters, then pass supported media URLs to the player. Browser-hosted Vercel functions are not a persistent torrent client, so torrent playback requires a separately hosted, authorized playback engine. This project is intended for content the user is authorized to access.
+A manifest describes an add-on interface; it is not a playable video URL. Catalogue discovery and playback are separate systems. This release only loads catalogue metadata. Stream resolution, playback, subtitles, and cross-device synchronization remain future phases.
