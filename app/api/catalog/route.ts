@@ -94,6 +94,10 @@ function safeMeta(value: unknown) {
   if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
   if (typeof item.id !== "string" || typeof item.name !== "string") return null;
+  const screeningText = [item.name, item.description, ...(Array.isArray(item.genres) ? item.genres : [])]
+    .filter((part): part is string => typeof part === "string")
+    .join(" ");
+  if (/\b(adult|porn|pornographic|erotic|hentai|xxx)\b/i.test(screeningText)) return null;
   return {
     id: item.id.slice(0, 300),
     type: textField(item.type, 40),
