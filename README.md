@@ -26,11 +26,17 @@ The add-on list and saved titles persist locally and can sync across devices aft
 The Vercel project uses these environment variables:
 
 - `AFTERFRAME_ADMIN_PASSWORD_HASH`: a salted scrypt password hash. The plaintext password is not stored in Vercel.
-- `AFTERFRAME_SESSION_SECRET`: a cryptographically random signing secret of at least 32 characters, used for seven-day HTTP-only admin sessions.\n- `SUPABASE_URL`: the HTTPS URL of the Supabase project.\n- `SUPABASE_SERVICE_ROLE_KEY`: the server-only service-role key; never expose it with a NEXT_PUBLIC_ prefix.
+- `AFTERFRAME_SESSION_SECRET`: a cryptographically random signing secret of at least 32 characters, used for seven-day HTTP-only admin sessions.
+- `SUPABASE_URL`: the HTTPS URL of the Supabase project.
+- `SUPABASE_SERVICE_ROLE_KEY`: the server-only service-role key; never expose it with a NEXT_PUBLIC_ prefix.
 
 Both variables must be present for administrator sign-in. The admin session is checked server-side for protected add-on installation requests. Do not commit secrets or paste them into source files.
 
-## Cloud library setup\n\nApply `supabase/migrations/202611270001_afterframe_user_state.sql` to the Supabase project, then configure the two Supabase variables above in the Vercel production environment. The table has row-level security enabled and intentionally has no public policies; the server route accesses it only after validating the admin session. Until those steps are complete, the app continues using browser-local storage.\n\n## Development
+## Cloud library setup
+
+Apply `supabase/migrations/202611270001_afterframe_user_state.sql` to the Supabase project, then configure the two Supabase variables above in the Vercel production environment. The table has row-level security enabled and intentionally has no public policies; the server route accesses it only after validating the admin session. Until those steps are complete, the app continues using browser-local storage.
+
+## Development
 
 - Node.js 20+
 - `npm install`
