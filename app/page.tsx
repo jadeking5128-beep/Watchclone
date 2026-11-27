@@ -5,7 +5,7 @@ import { Search, Play, Plus, ChevronRight, SlidersHorizontal, Clapperboard, Comp
 const films = [
  {id:1,title:"Dune: Part Two",year:"2024",kind:"SCI-FI · ADVENTURE",rating:"8.5",time:"2h 46m",image:"https://image.tmdb.org/t/p/w780/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",tag:"FEATURED"},
  {id:2,title:"The Batman",year:"2022",kind:"CRIME · DRAMA",rating:"7.8",time:"2h 56m",image:"https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg"},
- {id:3,title:"Interstellar",year:"2014",kind:"SCI-FI · DRAMA",rating:"8.7",time:"2h 49m",image:"https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6M xlNBvIx.jpg"},
+ {id:3,title:"Interstellar",year:"2014",kind:"SCI-FI · DRAMA",rating:"8.7",time:"2h 49m",image:"https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"},
  {id:4,title:"Blade Runner 2049",year:"2017",kind:"SCI-FI · MYSTERY",rating:"8.0",time:"2h 44m",image:"https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"},
  {id:5,title:"Oppenheimer",year:"2023",kind:"DRAMA · HISTORY",rating:"8.3",time:"3h 00m",image:"https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg"},
  {id:6,title:"Arrival",year:"2016",kind:"SCI-FI · DRAMA",rating:"7.9",time:"1h 56m",image:"https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg"}
