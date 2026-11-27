@@ -14,13 +14,14 @@ function isPublicAddress(address: string) {
     if (a === 100 && b >= 64 && b <= 127) return false;
     if (a === 169 && b === 254) return false;
     if (a === 172 && b >= 16 && b <= 31) return false;
-    if (a === 192 && (b === 0 || b === 168)) return false;
-    if (a === 198 && (b === 18 || b === 19 || b === 51)) return false;
-    if (a === 203 && b === 0) return false;
+    if (a === 192 && (b === 0 || b === 2 || b === 168 || (b === 88 && p[2] === 99))) return false;
+    if (a === 198 && (b === 18 || b === 19 || (b === 51 && p[2] === 100))) return false;
+    if (a === 203 && b === 0 && p[2] === 113) return false;
     return true;
   }
   if (isIP(address) === 6) {
     const value = address.toLowerCase();
+    if (value.startsWith("2001:db8:")) return false;
     return value.startsWith("2") || value.startsWith("3");
   }
   return false;
@@ -79,6 +80,16 @@ function textField(value: unknown, max = 1000): string | undefined {
   return typeof value === "string" ? value.slice(0, max) : undefined;
 }
 
+function safeImageUrl(value: unknown): string | undefined {
+  if (typeof value !== "string" || value.length > 2000) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function safeMeta(value: unknown) {
   if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
@@ -87,8 +98,8 @@ function safeMeta(value: unknown) {
     id: item.id.slice(0, 300),
     type: textField(item.type, 40),
     name: item.name.slice(0, 200),
-    poster: textField(item.poster, 2000),
-    background: textField(item.background, 2000),
+    poster: safeImageUrl(item.poster),
+    background: safeImageUrl(item.background),
     description: textField(item.description, 1200),
     releaseInfo: textField(item.releaseInfo, 80),
     imdbRating: textField(item.imdbRating, 20),
