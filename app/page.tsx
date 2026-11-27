@@ -10,11 +10,11 @@ function toFilm(meta:CatalogMeta,source:string):Film{
 const year=meta.releaseInfo?.match(/[0-9]{4}/)?.[0]||"";
 return {id:stableId(meta.id),title:meta.name,year,genre:meta.genres?.slice(0,2).join(" · ")||(meta.type==="series"?"Series":meta.type==="anime"?"Anime":"Movie"),rating:meta.imdbRating||"—",runtime:meta.runtime||"",poster:meta.poster||"",backdrop:meta.background||meta.poster||"",description:meta.description,source};
 }
-const suggestedAddons:{name:string;url:string}[]=[];
+const suggestedAddons:{name:string;url:string}[]=[{"name":"BTTTR catalogue","url":"https://btttr.cc/TYxBDoMwDAT_4nP6gXyg96q3qgcLrBQpxNR2VCHE36sEAtzGs-tdoEPDyEHBvyCikdptBNdQwYFxj3OVG50OwUHH45BCjXfUE0vBhFLfKsdRShNPOaLUoPE2PsHbwUiG4Je1hGok4JcaecBsXH6Eg5AqeJNM-_gTwyG-GeNg81Xph393SkJX8UAbUmgGA13Fuv4B/manifest.json"},{"name":"RFNX catalogue","url":"https://fun.rfnx.workers.dev/manifest.json"},{"name":"Netflix catalogue","url":"https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json"}];
 const STORAGE_KEY="afterframe.addons.v1";
 const DEFAULTS_KEY="afterframe.addons.defaults.v1";
 const LIBRARY_KEY="afterframe.library.v1";
-const defaultSources:{name:string;url:string}[]=[];
+const defaultSources:{name:string;url:string}[]=[{"name":"BTTTR catalogue","url":"https://btttr.cc/TYxBDoMwDAT_4nP6gXyg96q3qgcLrBQpxNR2VCHE36sEAtzGs-tdoEPDyEHBvyCikdptBNdQwYFxj3OVG50OwUHH45BCjXfUE0vBhFLfKsdRShNPOaLUoPE2PsHbwUiG4Je1hGok4JcaecBsXH6Eg5AqeJNM-_gTwyG-GeNg81Xph393SkJX8UAbUmgGA13Fuv4B/manifest.json"},{"name":"RFNX catalogue","url":"https://fun.rfnx.workers.dev/manifest.json"},{"name":"Netflix catalogue","url":"https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json"}];
 
 function PosterCard({film,saved,onSave,onOpen}:{film:Film;saved:boolean;onSave:()=>void;onOpen:()=>void}){
 return <article className="poster-card"><button className="poster-art" style={{backgroundImage:`url("${film.poster}")`}} onClick={onOpen} aria-label={`Open ${film.title}`}><span className="poster-year">{film.year}</span><span className="poster-play"><Play size={17} fill="currentColor"/></span></button><button className={saved?"poster-save is-saved":"poster-save"} onClick={onSave} aria-label={saved?"Remove from library":"Save to library"}><Bookmark size={15} fill={saved?"currentColor":"none"}/></button><div className="poster-copy"><div><h3>{film.title}</h3><p>{film.genre}</p></div><span className="poster-rating"><Star size={11} fill="currentColor"/> {film.rating}</span></div></article>;
