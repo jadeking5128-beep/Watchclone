@@ -1,4 +1,4 @@
-import { createHmac, createHash, timingSafeEqual } from "node:crypto";
+import { createHmac, createHash, scryptSync, timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 const COOKIE_NAME = "afterframe_admin";
@@ -15,7 +15,7 @@ function signature(expires: string, key: string) {
 }
 
 export function adminIsConfigured() {
-  return Boolean(process.env.AFTERFRAME_ADMIN_PASSWORD && secret());
+  return Boolean(process.env.AFTERFRAME_ADMIN_PASSWORD_HASH && secret());
 }
 
 export function createAdminSession() {
@@ -30,7 +30,7 @@ export function verifyAdminSession(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
   if (!key || !token) return false;
   const [expires, supplied, extra] = token.split(".");
-  if (!expires || !supplied || extra || !/^\d+$/.test(expires)) return false;
+  if (!expires || !supplied || extra || !/^\\d+$/.test(expires)) return false;
   if (Number(expires) <= Math.floor(Date.now() / 1000)) return false;
   const expected = signature(expires, key);
   const a = Buffer.from(createHash("sha256").update(supplied).digest());
@@ -39,11 +39,17 @@ export function verifyAdminSession(request: NextRequest) {
 }
 
 export function verifyAdminPassword(input: unknown) {
-  const configured = process.env.AFTERFRAME_ADMIN_PASSWORD;
+  const configured = process.env.AFTERFRAME_ADMIN_PASSWORD_HASH;
   if (typeof input !== "string" || !configured) return false;
-  const a = createHash("sha256").update(input).digest();
-  const b = createHash("sha256").update(configured).digest();
-  return timingSafeEqual(a, b);
+  const [algorithm, salt, expectedHex, extra] = configured.split("$");
+  if (algorithm !== "scrypt" || !salt || !expectedHex || extra) return false;
+  try {
+    const actual = scryptSync(input, Buffer.from(salt, "base64url"), 32, { N: 2 ** 14, r: 8, p: 1 });
+    const expected = Buffer.from(expectedHex, "base64url");
+    return expected.length === actual.length && timingSafeEqual(actual, expected);
+  } catch {
+    return false;
+  }
 }
 
 export const ADMIN_COOKIE_NAME = COOKIE_NAME;
