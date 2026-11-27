@@ -1,6 +1,7 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminSession } from "@/lib/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -127,6 +128,9 @@ async function fetchManifest(input: string): Promise<{ manifest: Manifest; final
 }
 
 export async function POST(request: NextRequest) {
+  if (!verifyAdminSession(request)) {
+    return NextResponse.json({ error: "Admin access is required to add an add-on." }, { status: 403 });
+  }
   try {
     const body = await request.json();
     if (!body || typeof body.url !== "string" || body.url.length > 2048) {
