@@ -10,13 +10,13 @@ The responsive AFTERFRAME discovery experience now loads real metadata from comp
 
 **Add-on phase:** the app includes a Stremio-compatible manifest URL installer and add-on manager. The server validates HTTPS URLs, blocks local/private destinations, re-checks redirects, applies request timeouts, limits response sizes, and verifies required manifest fields. The three sources supplied for AFTERFRAME are seeded into the browser's add-on list on first launch. Custom add-on installation and removal remain administrator-only.
 
-The add-on list and saved titles are currently browser-local; they are not synced between devices. Add-ons that declare only non-catalogue resources do not populate the discovery shelves. This phase handles catalogue metadata only; it does not resolve streams or play video.
+The add-on list and saved titles are currently browser-local; they are not synced between devices. Add-ons that declare only non-catalogue resources do not populate the discovery shelves. This phase handles catalogue metadata only; it does not resolve streams or play video. Selecting a title opens a detailed dossier with source attribution and an explicit playback-availability state. No verified official playback provider is currently connected.
 
 ## Product roadmap
 
 1. Metadata provider integration and real catalogue discovery — initial implementation complete.
 2. Stremio-compatible manifest importer and add-on management — initial implementation complete.
-3. Authorized playback-source integration and source selection.
+3. Title detail dossier and playback availability foundation — implemented. Actual provider handoff remains pending verified official-provider integration.
 4. HLS/DASH player, subtitles, audio tracks, resume and episode progression.
 5. IntroDB integration where supported by available metadata/API access.
 6. Cloud-synced user library, watch history, and optional Trakt/Simkl sync.
@@ -48,4 +48,4 @@ Manifest validation checks expected structure and network boundaries; it does no
 
 ## Architecture notes
 
-A manifest describes an add-on interface; it is not a playable video URL. Catalogue discovery and playback are separate systems. This release only loads catalogue metadata. Stream resolution, playback, subtitles, and cross-device synchronization remain future phases.
+A manifest describes an add-on interface; it is not a playable video URL. Catalogue discovery and playback are separate systems. This release only loads catalogue metadata. Stream resolution, playback, subtitles, and cross-device synchronization remain future phases. AFTERFRAME will only add playback integrations for verified, authorized providers; it will not resolve torrent or unverified third-party streams.
