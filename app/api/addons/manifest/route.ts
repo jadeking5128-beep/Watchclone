@@ -110,13 +110,21 @@ async function fetchManifest(input: string): Promise<{ manifest: Manifest; final
     if (value.resources.length > 100 || value.types.length > 100) {
       throw new Error("The manifest contains too many resources or content types.");
     }
+    const hasCatalogResource = value.resources.some((resource) =>
+      resource === "catalog" ||
+      (resource && typeof resource === "object" && (resource as Record<string, unknown>).name === "catalog")
+    );
+    if (!hasCatalogResource || !Array.isArray(value.catalogs) || value.catalogs.length === 0) {
+      throw new Error("AFTERFRAME only accepts add-ons that publish catalogue metadata.");
+    }
     const manifest: Manifest = {
       id: value.id.slice(0, 200),
       version: value.version.slice(0, 40),
       name: value.name.slice(0, 120),
       description: typeof value.description === "string" ? value.description.slice(0, 1000) : undefined,
       logo: typeof value.logo === "string" && value.logo.startsWith("https://") ? value.logo.slice(0, 1000) : undefined,
-      resources: value.resources as Manifest["resources"],
+      // Store only the catalogue capability; stream resources are never enabled.
+      resources: ["catalog"],
       types: value.types.filter((item): item is string => typeof item === "string").slice(0, 100),
       catalogs: Array.isArray(value.catalogs) ? value.catalogs.slice(0, 100) as Manifest["catalogs"] : [],
       idPrefixes: Array.isArray(value.idPrefixes) ? value.idPrefixes.filter((item): item is string => typeof item === "string").slice(0, 100) : [],
