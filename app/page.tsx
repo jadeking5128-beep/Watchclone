@@ -40,6 +40,10 @@ export default function Home() {
   const [adminBusy, setAdminBusy] = useState(false);
 
   useEffect(() => {
+    fetch("/api/admin/session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => { setAdminConfigured(Boolean(data.configured)); setAdminAuthenticated(Boolean(data.authenticated)); })
+      .catch(() => setAdminConfigured(false));
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setAddons(JSON.parse(stored) as InstalledAddon[]);
@@ -215,7 +219,7 @@ export default function Home() {
             <label htmlFor="manifest-url">MANIFEST URL</label>
             <div className="manifest-input-row"><input id="manifest-url" type="url" required value={manifestUrl} onChange={(event) => setManifestUrl(event.target.value)} placeholder="https://example.com/manifest.json"/><button className="primary-btn" disabled={installing}>{installing ? <><LoaderCircle size={15} className="spin"/> Checking</> : "Install add-on"}</button></div>
             {installError && <p className="form-error" role="alert">{installError}</p>}
-          </form>
+          </form>}
           <div className="security-note"><ShieldCheck size={15}/><span>HTTPS only. Local/private network destinations and non-standard ports are blocked. Review an add-on's source before installing it.</span></div>
           <div className="installed-head"><h3>Installed add-ons</h3><span>{addons.length} INSTALLED</span></div>
           {addons.length === 0 ? <div className="addon-empty"><Puzzle size={23}/><p>No add-ons installed yet.</p><span>Install a compatible manifest to start building your catalogue.</span></div> :
