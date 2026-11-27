@@ -1,0 +1,30 @@
+"use client";
+import { useMemo, useState } from "react";
+import { Search, Play, Plus, ChevronRight, SlidersHorizontal, Clapperboard, Compass, Bookmark, Settings2, Tv, Sparkles, CircleHelp, Menu, X, ArrowUpRight } from "lucide-react";
+
+const films = [
+ {id:1,title:"Dune: Part Two",year:"2024",kind:"SCI-FI · ADVENTURE",rating:"8.5",time:"2h 46m",image:"https://image.tmdb.org/t/p/w780/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",tag:"FEATURED"},
+ {id:2,title:"The Batman",year:"2022",kind:"CRIME · DRAMA",rating:"7.8",time:"2h 56m",image:"https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg"},
+ {id:3,title:"Interstellar",year:"2014",kind:"SCI-FI · DRAMA",rating:"8.7",time:"2h 49m",image:"https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6M xlNBvIx.jpg"},
+ {id:4,title:"Blade Runner 2049",year:"2017",kind:"SCI-FI · MYSTERY",rating:"8.0",time:"2h 44m",image:"https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"},
+ {id:5,title:"Oppenheimer",year:"2023",kind:"DRAMA · HISTORY",rating:"8.3",time:"3h 00m",image:"https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg"},
+ {id:6,title:"Arrival",year:"2016",kind:"SCI-FI · DRAMA",rating:"7.9",time:"1h 56m",image:"https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg"}
+];
+const categories=["For you","Movies","Series","Documentaries","Animation"];
+export default function Home(){
+ const [active,setActive]=useState("For you"),[query,setQuery]=useState(""),[saved,setSaved]=useState<number[]>([]),[notice,setNotice]=useState("");
+ const filtered=useMemo(()=>films.filter(f=>f.title.toLowerCase().includes(query.toLowerCase())),[query]);
+ const toggleSave=(id:number)=>setSaved(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+ return <main className="shell">
+  <header className="topbar"><a className="brand" href="#"><span className="brand-mark">A<span>·</span></span><span>AFTERFRAME<small>YOUR CINEMA, REIMAGINED</small></span></a><nav className="desktop-nav"><a className="nav-active">Discover</a><a onClick={()=>setNotice("Your library is being set up.")}>Library</a><a onClick={()=>setNotice("Add-on manager is coming next.")}>Add-ons</a></nav><div className="top-actions"><button className="icon-btn" aria-label="Search"><Search size={18}/></button><button className="profile">T</button><button className="mobile-menu" aria-label="Menu"><Menu/></button></div></header>
+  <section className="hero"><div className="hero-image"/><div className="hero-shade"/><div className="hero-content"><div className="eyebrow"><span className="live-dot"/> THE FEATURE PRESENTATION <span className="eyebrow-line"/></div><div className="hero-kicker">A FILM BY DENIS VILLENEUVE</div><h1>DUNE <i>PART TWO</i></h1><p className="hero-sub">THE DESERT IS CALLING.</p><div className="hero-meta"><span>2024</span><span>SCI-FI / ADVENTURE</span><span>2H 46M</span><span className="rating">★ 8.5</span></div><p className="hero-copy">Destiny is written in the sand. The next chapter of an epic journey awaits.</p><div className="hero-buttons"><button className="primary-btn" onClick={()=>setNotice("Playback will be available when a compatible source is connected.")}><Play size={16} fill="currentColor"/> Explore film</button><button className="secondary-btn" onClick={()=>toggleSave(1)}>{saved.includes(1)?"✓ In your list":<><Plus size={17}/> Add to list</>}</button></div></div><div className="hero-index"><span>01</span><div/><span>04</span></div><div className="hero-caption">NOW SHOWING <span>—</span> EDITION 001</div></section>
+  <section className="content"><div className="section-head"><div><div className="eyebrow muted">THE COLLECTION / 001</div><h2>Find your <i>next world.</i></h2></div><button className="text-link" onClick={()=>setNotice("Full catalogue integration is coming next.")}>View all <ArrowUpRight size={15}/></button></div>
+   <div className="toolbar"><div className="tabs">{categories.map(c=><button key={c} className={active===c?"tab selected":"tab"} onClick={()=>setActive(c)}>{c}</button>)}</div><div className="searchbox"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search this collection"/></div><button className="filter-btn" onClick={()=>setNotice("Filters will be added with catalogue integration.")}><SlidersHorizontal size={16}/> Filter</button></div>
+   <div className="poster-grid">{filtered.map((f,i)=><article className="poster-card" key={f.id}><div className="poster" style={{backgroundImage:"url('"+f.image+"')"}}><div className="poster-top"><span>{f.year}</span><button onClick={()=>toggleSave(f.id)} aria-label="Save title" className={saved.includes(f.id)?"save saved":"save"}><Bookmark size={15} fill={saved.includes(f.id)?"currentColor":"none"}/></button></div><div className="poster-bottom"><span>★ {f.rating}</span><button onClick={()=>setNotice("Connect a compatible source to play this title.")}><Play size={14} fill="currentColor"/></button></div></div><div className="poster-info"><div><h3>{f.title}</h3><p>{f.kind}</p></div><span className="duration">{f.time}</span></div></article>)}</div>
+   {filtered.length===0&&<div className="empty">No titles match “{query}”. Try another search.</div>}
+  </section>
+  <section className="ecosystem"><div className="eco-icon"><Sparkles size={19}/></div><div><div className="eyebrow muted">YOUR STREAMING ECOSYSTEM</div><h2>One home. <i>Every source.</i></h2><p>Bring your compatible catalogues and streaming add-ons together in one considered experience.</p></div><button className="secondary-btn" onClick={()=>setNotice("Manifest URL installation is the next integration milestone.")}>Explore add-ons <ChevronRight size={16}/></button></section>
+  <footer><a className="brand footer-brand"><span className="brand-mark">A<span>·</span></span><span>AFTERFRAME<small>YOUR CINEMA, REIMAGINED</small></span></a><span>MADE FOR THE LOVE OF STORIES.</span><span>© 2026 AFTERFRAME</span></footer>
+  {notice&&<div className="toast" role="status">{notice}<button onClick={()=>setNotice("")}><X size={15}/></button></div>}
+ </main>
+}
