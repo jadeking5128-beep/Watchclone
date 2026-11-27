@@ -1,238 +1,70 @@
 "use client";
-
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  Search, Play, Plus, ChevronRight, SlidersHorizontal, Bookmark, Sparkles,
-  X, ArrowUpRight, Puzzle, ShieldCheck, Trash2, ExternalLink, LoaderCircle,
-} from "lucide-react";
+import { House, Compass, Bookmark, Puzzle, Search, Play, Plus, ChevronRight, ChevronLeft, X, ShieldCheck, Trash2, ExternalLink, LoaderCircle, Star, CircleUserRound, ArrowUpRight } from "lucide-react";
 import type { InstalledAddon } from "@/lib/addons";
 
-const films = [
-  { id: 1, title: "Dune: Part Two", year: "2024", kind: "SCI-FI · ADVENTURE", rating: "8.5", time: "2h 46m", image: "https://image.tmdb.org/t/p/w780/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg" },
-  { id: 2, title: "The Batman", year: "2022", kind: "CRIME · DRAMA", rating: "7.8", time: "2h 56m", image: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg" },
-  { id: 3, title: "Interstellar", year: "2014", kind: "SCI-FI · DRAMA", rating: "8.7", time: "2h 49m", image: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
-  { id: 4, title: "Blade Runner 2049", year: "2017", kind: "SCI-FI · MYSTERY", rating: "8.0", time: "2h 44m", image: "https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg" },
-  { id: 5, title: "Oppenheimer", year: "2023", kind: "DRAMA · HISTORY", rating: "8.3", time: "3h 00m", image: "https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg" },
-  { id: 6, title: "Arrival", year: "2016", kind: "SCI-FI · DRAMA", rating: "7.9", time: "1h 56m", image: "https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg" },
-];
-const categories = ["For you", "Movies", "Series", "Documentaries", "Animation"];
-const STORAGE_KEY = "afterframe.addons.v1";
-const suggestedAddons = [
-  { name: "BTTTR catalogue", url: "https://btttr.cc/TYxBDoMwDAT_4nP6gXyg96q3qgcLrBQpxNR2VCHE36sEAtzGs-tdoEPDyEHBvyCikdptBNdQwYFxj3OVG50OwUHH45BCjXfUE0vBhFLfKsdRShNPOaLUoPE2PsHbwUiG4Je1hGok4JcaecBsXH6Eg5AqeJNM-_gTwyG-GeNg81Xph393SkJX8UAbUmgGA13Fuv4B/manifest.json" },
-  { name: "RFNX catalogue", url: "https://fun.rfnx.workers.dev/manifest.json" },
-  { name: "Netflix catalogue", url: "https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json" },
-];
+type Film={id:number;title:string;year:string;genre:string;rating:string;runtime:string;poster:string;backdrop:string};
+const films:Film[]=[
+{id:1,title:"Dune: Part Two",year:"2024",genre:"Sci-fi · Adventure",rating:"8.5",runtime:"2h 46m",poster:"https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",backdrop:"https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"},
+{id:2,title:"The Batman",year:"2022",genre:"Crime · Drama",rating:"7.8",runtime:"2h 56m",poster:"https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",backdrop:"https://image.tmdb.org/t/p/w1280/b0PlSFdDwbyK0cf5RxwDpaY6L4Q.jpg"},
+{id:3,title:"Interstellar",year:"2014",genre:"Sci-fi · Drama",rating:"8.7",runtime:"2h 49m",poster:"https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",backdrop:"https://image.tmdb.org/t/p/w1280/xJHokMbljvjADYdit5fK5VQsXEG.jpg"},
+{id:4,title:"Blade Runner 2049",year:"2017",genre:"Sci-fi · Mystery",rating:"8.0",runtime:"2h 44m",poster:"https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",backdrop:"https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"},
+{id:5,title:"Oppenheimer",year:"2023",genre:"Drama · History",rating:"8.3",runtime:"3h 00m",poster:"https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg",backdrop:"https://image.tmdb.org/t/p/w1280/fm6KqXpk3M2HVveHwCrBSSBaO0V.jpg"},
+{id:6,title:"Arrival",year:"2016",genre:"Sci-fi · Drama",rating:"7.9",runtime:"1h 56m",poster:"https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg",backdrop:"https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg"}];
+const suggestedAddons=[
+{name:"BTTTR catalogue",url:"https://btttr.cc/TYxBDoMwDAT_4nP6gXyg96q3qgcLrBQpxNR2VCHE36sEAtzGs-tdoEPDyEHBvyCikdptBNdQwYFxj3OVG50OwUHH45BCjXfUE0vBhFLfKsdRShNPOaLUoPE2PsHbwUiG4Je1hGok4JcaecBsXH6Eg5AqeJNM-_gTwyG-GeNg81Xph393SkJX8UAbUmgGA13Fuv4B/manifest.json"},
+{name:"RFNX catalogue",url:"https://fun.rfnx.workers.dev/manifest.json"},
+{name:"Netflix catalogue",url:"https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json"}];
+const STORAGE_KEY="afterframe.addons.v1";
 
-export default function Home() {
-  const [active, setActive] = useState("For you");
-  const [query, setQuery] = useState("");
-  const [saved, setSaved] = useState<number[]>([]);
-  const [notice, setNotice] = useState("");
-  const [managerOpen, setManagerOpen] = useState(false);
-  const [manifestUrl, setManifestUrl] = useState("");
-  const [addons, setAddons] = useState<InstalledAddon[]>([]);
-  const [installing, setInstalling] = useState(false);
-  const [installError, setInstallError] = useState("");
-  const [adminConfigured, setAdminConfigured] = useState(false);
-  const [adminAuthenticated, setAdminAuthenticated] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [adminError, setAdminError] = useState("");
-  const [adminBusy, setAdminBusy] = useState(false);
+function PosterCard({film,saved,onSave,onOpen}:{film:Film;saved:boolean;onSave:()=>void;onOpen:()=>void}){
+return <article className="poster-card"><button className="poster-art" style={{backgroundImage:`url("${film.poster}")`}} onClick={onOpen} aria-label={`Open ${film.title}`}><span className="poster-year">{film.year}</span><span className="poster-play"><Play size={17} fill="currentColor"/></span></button><button className={saved?"poster-save is-saved":"poster-save"} onClick={onSave} aria-label={saved?"Remove from library":"Save to library"}><Bookmark size={15} fill={saved?"currentColor":"none"}/></button><div className="poster-copy"><div><h3>{film.title}</h3><p>{film.genre}</p></div><span className="poster-rating"><Star size={11} fill="currentColor"/> {film.rating}</span></div></article>;
+}
+function Shelf({title,eyebrow,items,saved,onSave,onOpen}:{title:string;eyebrow:string;items:Film[];saved:number[];onSave:(id:number)=>void;onOpen:(film:Film)=>void}){
+return <section className="shelf"><div className="shelf-heading"><div><span className="shelf-eyebrow">{eyebrow}</span><h2>{title}</h2></div><div className="shelf-controls"><button aria-label="Scroll left" onClick={e=>e.currentTarget.closest(".shelf")?.querySelector(".shelf-track")?.scrollBy({left:-520,behavior:"smooth"})}><ChevronLeft size={17}/></button><button aria-label="Scroll right" onClick={e=>e.currentTarget.closest(".shelf")?.querySelector(".shelf-track")?.scrollBy({left:520,behavior:"smooth"})}><ChevronRight size={17}/></button></div></div><div className="shelf-track">{items.map(film=><PosterCard key={film.id} film={film} saved={saved.includes(film.id)} onSave={()=>onSave(film.id)} onOpen={()=>onOpen(film)}/>)}</div></section>;
+}
 
-  useEffect(() => {
-    fetch("/api/admin/session", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((data) => { setAdminConfigured(Boolean(data.configured)); setAdminAuthenticated(Boolean(data.authenticated)); })
-      .catch(() => setAdminConfigured(false));
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setAddons(JSON.parse(stored) as InstalledAddon[]);
-    } catch {
-      setAddons([]);
-    }
-  }, []);
+export default function Home(){
+const [activeTab,setActiveTab]=useState("Home"),[query,setQuery]=useState(""),[saved,setSaved]=useState<number[]>([]),[notice,setNotice]=useState("");
+const [managerOpen,setManagerOpen]=useState(false),[manifestUrl,setManifestUrl]=useState(""),[addons,setAddons]=useState<InstalledAddon[]>([]),[installing,setInstalling]=useState(false),[installError,setInstallError]=useState("");
+const [adminConfigured,setAdminConfigured]=useState(false),[adminAuthenticated,setAdminAuthenticated]=useState(false),[adminPassword,setAdminPassword]=useState(""),[adminError,setAdminError]=useState(""),[adminBusy,setAdminBusy]=useState(false);
+useEffect(()=>{fetch("/api/admin/session",{cache:"no-store"}).then(r=>r.json()).then(d=>{setAdminConfigured(Boolean(d.configured));setAdminAuthenticated(Boolean(d.authenticated));}).catch(()=>setAdminConfigured(false));try{const v=localStorage.getItem(STORAGE_KEY);if(v)setAddons(JSON.parse(v) as InstalledAddon[]);}catch{setAddons([]);}},[]);
+const filteredFilms=useMemo(()=>films.filter(f=>(f.title.toLowerCase().includes(query.toLowerCase()))&&(activeTab!=="Library"||saved.includes(f.id))),[query,activeTab,saved]);
+const toggleSave=(id:number)=>setSaved(current=>current.includes(id)?current.filter(x=>x!==id):[...current,id]);
+function persistAddons(next:InstalledAddon[]){setAddons(next);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{setInstallError("This browser could not save your add-on list.");}}
+async function loginAdmin(e:FormEvent<HTMLFormElement>){e.preventDefault();setAdminBusy(true);setAdminError("");try{const r=await fetch("/api/admin/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:adminPassword})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Admin sign-in failed.");setAdminAuthenticated(true);setAdminPassword("");}catch(err){setAdminError(err instanceof Error?err.message:"Admin sign-in failed.");}finally{setAdminBusy(false);}}
+async function logoutAdmin(){await fetch("/api/admin/session",{method:"DELETE"});setAdminAuthenticated(false);setAdminPassword("");}
+async function installAddon(e:FormEvent<HTMLFormElement>){e.preventDefault();if(!adminAuthenticated){setInstallError("Administrator access is required.");return;}setInstalling(true);setInstallError("");try{const r=await fetch("/api/addons/manifest",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:manifestUrl})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not read this manifest.");const item:InstalledAddon={manifest:d.manifest,manifestUrl:d.finalUrl,installedAt:new Date().toISOString()};persistAddons([item,...addons.filter(a=>a.manifest.id!==item.manifest.id)]);setManifestUrl("");}catch(err){setInstallError(err instanceof Error?err.message:"Could not install this add-on.");}finally{setInstalling(false);}}
+function removeAddon(id:string){persistAddons(addons.filter(a=>a.manifest.id!==id));}
+const openFilm=(film:Film)=>setNotice(`${film.title} · Connect a compatible catalogue and playback source to watch.`);
+const featured=films[0];
 
-  const filtered = useMemo(
-    () => films.filter((film) => film.title.toLowerCase().includes(query.toLowerCase())),
-    [query],
-  );
+return <div className="app-shell">
+<aside className="sidebar"><a className="app-logo" href="#" aria-label="Afterframe home"><span>A</span></a><div className="side-rule"/><nav className="side-nav" aria-label="Main navigation">
+<button className={activeTab==="Home"?"side-link active":"side-link"} onClick={()=>setActiveTab("Home")}><House/><span>Home</span></button>
+<button className={activeTab==="Discover"?"side-link active":"side-link"} onClick={()=>setActiveTab("Discover")}><Compass/><span>Discover</span></button>
+<button className={activeTab==="Library"?"side-link active":"side-link"} onClick={()=>setActiveTab("Library")}><Bookmark/><span>My library</span>{saved.length>0&&<i>{saved.length}</i>}</button></nav>
+<div className="sidebar-bottom"><button className="side-link" onClick={()=>setManagerOpen(true)}><Puzzle/><span>Add-ons</span>{addons.length>0&&<i>{addons.length}</i>}</button><button className="side-profile" onClick={()=>setNotice("Profile settings will be available in a later update.")} aria-label="Profile"><CircleUserRound/></button></div></aside>
 
-  const toggleSave = (id: number) =>
-    setSaved((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+<main className="main-view"><header className="topbar"><div className="mobile-brand"><span>A</span><b>AFTERFRAME</b></div><div className="breadcrumb"><span>YOUR LIBRARY</span><ChevronRight size={13}/><strong>{activeTab==="Home"?"HOME":activeTab.toUpperCase()}</strong></div><div className="topbar-actions"><label className="global-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search titles, people, genres…"/><kbd>⌘ K</kbd></label><button className="top-addon" onClick={()=>setManagerOpen(true)} aria-label="Manage add-ons"><Puzzle size={17}/><span>{addons.length}</span></button><button className="avatar" onClick={()=>setNotice("Profile settings will be available in a later update.")} aria-label="Profile">T</button></div></header>
 
-  function persistAddons(next: InstalledAddon[]) {
-    setAddons(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      setInstallError("This browser could not save your add-on list.");
-    }
-  }
+{activeTab==="Home"&&!query&&<section className="feature" style={{backgroundImage:`url("${featured.backdrop}")`}}><div className="feature-gradient"/><div className="feature-content"><div className="feature-overline"><span/> FEATURED FILM <i/> {featured.year}</div><h1>Dune: <em>Part Two</em></h1><p className="feature-description">The saga continues as Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.</p><div className="feature-meta"><span><Star size={13} fill="currentColor"/> {featured.rating}</span><span>{featured.runtime}</span><span>{featured.genre}</span><span className="quality-tag">4K UHD</span></div><div className="feature-actions"><button className="watch-button" onClick={()=>openFilm(featured)}><Play size={16} fill="currentColor"/> View details</button><button className="list-button" onClick={()=>toggleSave(featured.id)}>{saved.includes(featured.id)?<Bookmark size={16} fill="currentColor"/>:<Plus size={17}/>} {saved.includes(featured.id)?"In my library":"Add to library"}</button></div></div><div className="feature-foot"><span>01 <i/> 06</span><span>ARTWORK-LED DISCOVERY</span></div></section>}
 
-  async function loginAdmin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setAdminBusy(true);
-    setAdminError("");
-    try {
-      const response = await fetch("/api/admin/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: adminPassword }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Admin sign-in failed.");
-      setAdminAuthenticated(true);
-      setAdminPassword("");
-      setAdminError("");
-    } catch (error) {
-      setAdminError(error instanceof Error ? error.message : "Admin sign-in failed.");
-    } finally {
-      setAdminBusy(false);
-    }
-  }
+<div className="library-content">
+{activeTab==="Library"?<div className="page-heading"><div><span className="section-overline">YOUR COLLECTION</span><h1>My <em>library</em></h1><p>Titles you have saved for later.</p></div><span className="count-label">{filteredFilms.length} TITLES</span></div>:activeTab==="Discover"||query?<div className="page-heading"><div><span className="section-overline">EXPLORE THE CATALOGUE</span><h1>Find your <em>next watch.</em></h1><p>Search across the titles currently available in this preview.</p></div><span className="count-label">{filteredFilms.length} RESULTS</span></div>:<div className="shelves-intro"><div><span className="section-overline">PICK UP WHERE YOU LEFT OFF</span><h2>Made for your <em>next movie night.</em></h2></div><span className="preview-note">CATALOGUE PREVIEW</span></div>}
 
-  async function logoutAdmin() {
-    await fetch("/api/admin/session", { method: "DELETE" });
-    setAdminAuthenticated(false);
-    setAdminPassword("");
-  }
+{activeTab==="Home"&&!query&&<section className="continue-section"><div className="shelf-heading"><div><span className="shelf-eyebrow">KEEP WATCHING</span><h2>Continue watching</h2></div><span className="shelf-hint">YOUR RECENT TITLES</span></div><div className="continue-row">{[films[2],films[4],films[5]].map((film,index)=><button className="continue-card" key={film.id} onClick={()=>openFilm(film)} style={{backgroundImage:`url("${film.backdrop}")`}}><span className="continue-shade"/><span className="continue-play"><Play size={15} fill="currentColor"/></span><span className="continue-info"><b>{film.title}</b><small>{index===0?"Episode 04 · 32 min left":index===1?"1h 18m left":"46 min left"}</small><i><span style={{width:[62,34,78][index]+"%"}}/></i></span></button>)}</div></section>}
 
-  async function installAddon(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setInstalling(true);
-    setInstallError("");
-    try {
-      const response = await fetch("/api/addons/manifest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: manifestUrl }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Could not read this manifest.");
-      const installed: InstalledAddon = {
-        manifest: result.manifest,
-        manifestUrl: result.finalUrl,
-        installedAt: new Date().toISOString(),
-      };
-      const next = [installed, ...addons.filter((item) => item.manifest.id !== installed.manifest.id)];
-      persistAddons(next);
-      setManifestUrl("");
-      setInstallError("");
-    } catch (error) {
-      setInstallError(error instanceof Error ? error.message : "Could not install this add-on.");
-    } finally {
-      setInstalling(false);
-    }
-  }
+{filteredFilms.length>0?(activeTab==="Library"||activeTab==="Discover"||query?<section className="all-results"><div className="results-grid">{filteredFilms.map(f=><PosterCard key={f.id} film={f} saved={saved.includes(f.id)} onSave={()=>toggleSave(f.id)} onOpen={()=>openFilm(f)}/>)}</div></section>:<><Shelf title="Popular right now" eyebrow="TRENDING" items={films} saved={saved} onSave={toggleSave} onOpen={openFilm}/><Shelf title="Worlds beyond our own" eyebrow="SCI-FI & FANTASY" items={[films[0],films[2],films[3],films[5]]} saved={saved} onSave={toggleSave} onOpen={openFilm}/><Shelf title="Critically acclaimed" eyebrow="THE COLLECTION" items={[films[4],films[2],films[1],films[0]]} saved={saved} onSave={toggleSave} onOpen={openFilm}/></>):<div className="empty-state"><Bookmark size={25}/><h3>{activeTab==="Library"?"Your library is empty":"No titles found"}</h3><p>{activeTab==="Library"?"Save films from the home screen and they will appear here.":"Try a different title or clear your search."}</p>{activeTab==="Library"&&<button onClick={()=>{setActiveTab("Home");setQuery("");}}>Explore titles <ArrowUpRight size={15}/></button>}</div>}
+</div>
+<footer className="app-footer"><span>AFTERFRAME <i>·</i> YOUR MEDIA, YOUR WAY</span><span>CONTENT SHOWN FOR UI PREVIEW</span></footer></main>
 
-  function removeAddon(id: string) {
-    persistAddons(addons.filter((item) => item.manifest.id !== id));
-  }
-
-  return (
-    <main className="shell">
-      <header className="topbar">
-        <a className="brand" href="#"><span className="brand-mark">A<span>·</span></span><span>AFTERFRAME<small>YOUR CINEMA, REIMAGINED</small></span></a>
-        <nav className="desktop-nav">
-          <a className="nav-active">Discover</a>
-          <button onClick={() => setNotice("Your saved titles are available in this browser session.")}>Library</button>
-          <button onClick={() => setManagerOpen(true)}>Add-ons <span className="nav-count">{addons.length || ""}</span></button>
-        </nav>
-        <div className="top-actions">
-          <button className="icon-btn" aria-label="Open add-ons" onClick={() => setManagerOpen(true)}><Puzzle size={18}/></button>
-          <button className="profile" aria-label="Profile">T</button>
-        </div>
-      </header>
-
-      <section className="hero">
-        <div className="hero-image"/><div className="hero-shade"/>
-        <div className="hero-content">
-          <div className="eyebrow"><span className="live-dot"/> THE FEATURE PRESENTATION <span className="eyebrow-line"/></div>
-          <div className="hero-kicker">A FILM BY DENIS VILLENEUVE</div>
-          <h1>DUNE <i>PART TWO</i></h1><p className="hero-sub">THE DESERT IS CALLING.</p>
-          <div className="hero-meta"><span>2024</span><span>SCI-FI / ADVENTURE</span><span>2H 46M</span><span className="rating">★ 8.5</span></div>
-          <p className="hero-copy">Destiny is written in the sand. The next chapter of an epic journey awaits.</p>
-          <div className="hero-buttons">
-            <button className="primary-btn" onClick={() => setNotice("Playback becomes available when a compatible source is connected.")}><Play size={16} fill="currentColor"/> Explore film</button>
-            <button className="secondary-btn" onClick={() => toggleSave(1)}>{saved.includes(1) ? "✓ In your list" : <><Plus size={17}/> Add to list</>}</button>
-          </div>
-        </div>
-        <div className="hero-index"><span>01</span><div/><span>04</span></div>
-        <div className="hero-caption">NOW SHOWING <span>—</span> EDITION 001</div>
-      </section>
-
-      <section className="content">
-        <div className="section-head"><div><div className="eyebrow muted">THE COLLECTION / 001</div><h2>Find your <i>next world.</i></h2></div><button className="text-link" onClick={() => setNotice("A live catalogue provider will be connected in the next phase.")}>View all <ArrowUpRight size={15}/></button></div>
-        <div className="toolbar">
-          <div className="tabs">{categories.map((category) => <button key={category} className={active === category ? "tab selected" : "tab"} onClick={() => setActive(category)}>{category}</button>)}</div>
-          <div className="searchbox"><Search size={15}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search this collection"/></div>
-          <button className="filter-btn" onClick={() => setNotice("Catalogue filters will arrive with metadata integration.")}><SlidersHorizontal size={16}/> Filter</button>
-        </div>
-        <div className="poster-grid">
-          {filtered.map((film) => <article className="poster-card" key={film.id}>
-            <div className="poster" style={{ backgroundImage: "url('" + film.image + "')" }}>
-              <div className="poster-top"><span>{film.year}</span><button onClick={() => toggleSave(film.id)} aria-label="Save title" className={saved.includes(film.id) ? "save saved" : "save"}><Bookmark size={15} fill={saved.includes(film.id) ? "currentColor" : "none"}/></button></div>
-              <div className="poster-bottom"><span>★ {film.rating}</span><button onClick={() => setNotice("Connect a compatible source to play this title.")} aria-label={"Explore " + film.title}><Play size={14} fill="currentColor"/></button></div>
-            </div>
-            <div className="poster-info"><div><h3>{film.title}</h3><p>{film.kind}</p></div><span className="duration">{film.time}</span></div>
-          </article>)}
-        </div>
-        {filtered.length === 0 && <div className="empty">No titles match “{query}”. Try another search.</div>}
-      </section>
-
-      <section className="ecosystem">
-        <div className="eco-icon"><Sparkles size={19}/></div>
-        <div><div className="eyebrow muted">YOUR STREAMING ECOSYSTEM</div><h2>One home. <i>Every source.</i></h2><p>Install compatible catalogue and streaming add-ons with a manifest URL.</p></div>
-        <button className="secondary-btn" onClick={() => setManagerOpen(true)}>Manage add-ons <ChevronRight size={16}/></button>
-      </section>
-
-      <footer><a className="brand footer-brand"><span className="brand-mark">A<span>·</span></span><span>AFTERFRAME<small>YOUR CINEMA, REIMAGINED</small></span></a><span>MADE FOR THE LOVE OF STORIES.</span><span>© 2026 AFTERFRAME</span></footer>
-
-      {managerOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setManagerOpen(false); }}>
-        <section className="addon-modal" role="dialog" aria-modal="true" aria-labelledby="addon-title">
-          <div className="modal-head"><div><div className="eyebrow muted">AFTERFRAME / EXTENSIONS</div><h2 id="addon-title">Add-on <i>manager.</i></h2></div><button className="modal-close" onClick={() => setManagerOpen(false)} aria-label="Close add-on manager"><X size={19}/></button></div>
-          <div className="admin-access">
-            {adminAuthenticated ? (
-              <div className="admin-status"><span><ShieldCheck size={15}/> ADMIN ACCESS ACTIVE</span><button type="button" onClick={logoutAdmin}>Sign out</button></div>
-            ) : (
-              <>
-                <div className="admin-access-copy"><ShieldCheck size={17}/><div><strong>Administrator access</strong><p>{adminConfigured ? "Sign in to add or remove catalogue sources." : "Admin access is not configured yet. Add the two server environment variables in Vercel."}</p></div></div>
-                {adminConfigured && <form className="admin-login" onSubmit={loginAdmin}>
-                  <input type="password" autoComplete="current-password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} placeholder="Admin password" required />
-                  <button className="secondary-btn" disabled={adminBusy}>{adminBusy ? "Checking…" : "Sign in"}</button>
-                </form>}
-                {adminError && <p className="form-error" role="alert">{adminError}</p>}
-              </>
-            )}
-          </div>
-          <div className="manifest-panel">
-            <div className="manifest-icon"><Puzzle size={20}/></div>
-            <div className="manifest-copy"><h3>Install from manifest URL</h3><p>Paste the HTTPS manifest URL supplied by a compatible Stremio add-on.</p></div>
-          </div>
-          {adminAuthenticated && <div className="suggested-sources">
-            <div className="suggested-head"><h3>Provided sources</h3><span>ADMIN ONLY · 3 URLS</span></div>
-            {suggestedAddons.map((source) => <div className="suggested-source" key={source.name}>
-              <span>{source.name}</span><button type="button" onClick={() => { setManifestUrl(source.url); setInstallError(""); }}>Use URL</button>
-            </div>)}
-          </div>}
-          {adminAuthenticated && <form className="manifest-form" onSubmit={installAddon}>
-            <label htmlFor="manifest-url">MANIFEST URL</label>
-            <div className="manifest-input-row"><input id="manifest-url" type="url" required value={manifestUrl} onChange={(event) => setManifestUrl(event.target.value)} placeholder="https://example.com/manifest.json"/><button className="primary-btn" disabled={installing}>{installing ? <><LoaderCircle size={15} className="spin"/> Checking</> : "Install add-on"}</button></div>
-            {installError && <p className="form-error" role="alert">{installError}</p>}
-          </form>}
-          <div className="security-note"><ShieldCheck size={15}/><span>HTTPS only. Local/private network destinations and non-standard ports are blocked. Review an add-on's source before installing it.</span></div>
-          <div className="installed-head"><h3>Installed add-ons</h3><span>{addons.length} INSTALLED</span></div>
-          {addons.length === 0 ? <div className="addon-empty"><Puzzle size={23}/><p>No add-ons installed yet.</p><span>Install a compatible manifest to start building your catalogue.</span></div> :
-            <div className="addon-list">{addons.map((addon) => <article className="addon-item" key={addon.manifest.id}>
-              <div className="addon-avatar">{addon.manifest.logo ? <img src={addon.manifest.logo} alt="" /> : <Puzzle size={18}/>}</div>
-              <div className="addon-details"><h4>{addon.manifest.name}</h4><p>{addon.manifest.description || addon.manifest.id}</p><span>v{addon.manifest.version} · {addon.manifest.types.join(", ")}</span><a href={addon.manifestUrl} target="_blank" rel="noreferrer">Manifest <ExternalLink size={11}/></a></div>
-              {adminAuthenticated && <button className="remove-addon" onClick={() => removeAddon(addon.manifest.id)} aria-label={"Remove " + addon.manifest.name}><Trash2 size={16}/></button>}
-            </article>)}</div>}
-          <p className="storage-note">Only authenticated administrators can add or remove sources. The installed list is currently saved in this browser only; account sync is not connected yet.</p>
-        </section>
-      </div>}
-
-      {notice && <div className="toast" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss"><X size={15}/></button></div>}
-    </main>
-  );
+{managerOpen&&<div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setManagerOpen(false);}}><section className="addon-modal" role="dialog" aria-modal="true" aria-labelledby="addon-title"><div className="modal-head"><div><span className="section-overline">AFTERFRAME / EXTENSIONS</span><h2 id="addon-title">Add-on <em>manager</em></h2><p>Manage catalogue sources connected to your library.</p></div><button className="modal-close" onClick={()=>setManagerOpen(false)} aria-label="Close add-on manager"><X size={19}/></button></div>
+<div className="admin-access">{adminAuthenticated?<div className="admin-status"><span><ShieldCheck size={15}/> ADMIN ACCESS ACTIVE</span><button type="button" onClick={logoutAdmin}>Sign out</button></div>:<><div className="admin-access-copy"><ShieldCheck size={17}/><div><strong>Administrator access</strong><p>{adminConfigured?"Sign in to add or remove catalogue sources.":"Admin access is not configured. Add the required environment variables in Vercel."}</p></div></div>{adminConfigured&&<form className="admin-login" onSubmit={loginAdmin}><input type="password" autoComplete="current-password" value={adminPassword} onChange={e=>setAdminPassword(e.target.value)} placeholder="Admin password" required/><button className="modal-action" disabled={adminBusy}>{adminBusy?"Checking…":"Sign in"}</button></form>}{adminError&&<p className="form-error" role="alert">{adminError}</p>}</>}</div>
+{adminAuthenticated&&<div className="suggested-sources"><div className="suggested-head"><h3>Provided sources</h3><span>ADMIN ONLY · 3 URLS</span></div>{suggestedAddons.map(source=><div className="suggested-source" key={source.name}><span>{source.name}</span><button type="button" onClick={()=>{setManifestUrl(source.url);setInstallError("");}}>Use URL</button></div>)}</div>}
+{adminAuthenticated&&<form className="manifest-form" onSubmit={installAddon}><label htmlFor="manifest-url">MANIFEST URL</label><div className="manifest-input-row"><input id="manifest-url" type="url" required value={manifestUrl} onChange={e=>setManifestUrl(e.target.value)} placeholder="https://example.com/manifest.json"/><button className="modal-action" disabled={installing}>{installing?<><LoaderCircle size={14} className="spin"/> Checking</>:"Install add-on"}</button></div>{installError&&<p className="form-error" role="alert">{installError}</p>}</form>}
+<div className="security-note"><ShieldCheck size={15}/><span>HTTPS only. Private network destinations and non-standard ports are blocked. Review a source before installing it.</span></div><div className="installed-head"><h3>Installed add-ons</h3><span>{addons.length} INSTALLED</span></div>
+{addons.length===0?<div className="addon-empty"><Puzzle size={23}/><p>No add-ons installed yet.</p><span>Install a compatible manifest to start building your catalogue.</span></div>:<div className="addon-list">{addons.map(addon=><article className="addon-item" key={addon.manifest.id}><div className="addon-avatar">{addon.manifest.logo?<img src={addon.manifest.logo} alt=""/>:<Puzzle size={18}/>}</div><div className="addon-details"><h4>{addon.manifest.name}</h4><p>{addon.manifest.description||addon.manifest.id}</p><span>v{addon.manifest.version} · {addon.manifest.types.join(", ")}</span><a href={addon.manifestUrl} target="_blank" rel="noreferrer">Manifest <ExternalLink size={11}/></a></div>{adminAuthenticated&&<button className="remove-addon" onClick={()=>removeAddon(addon.manifest.id)} aria-label={`Remove ${addon.manifest.name}`}><Trash2 size={16}/></button>}</article>)}</div>}<p className="storage-note">Only authenticated administrators can add or remove sources. The installed list is saved in this browser only; account sync is not connected yet.</p></section></div>}
+{notice&&<div className="toast" role="status">{notice}<button onClick={()=>setNotice("")} aria-label="Dismiss"><X size={15}/></button></div>}
+</div>;
 }
