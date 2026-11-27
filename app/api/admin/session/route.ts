@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (!adminIsConfigured()) {
     return NextResponse.json({
-      error: "Admin access is not configured. Set AFTERFRAME_ADMIN_PASSWORD and AFTERFRAME_SESSION_SECRET in Vercel.",
+      error: "Admin access is not configured. Set AFTERFRAME_ADMIN_PASSWORD_HASH and AFTERFRAME_SESSION_SECRET in Vercel.",
     }, { status: 503 });
   }
 
